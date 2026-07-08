@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UK Invests — Practice</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">UK&nbsp;Invests</div>
+    <h1>Your practice portfolio</h1>
+    <p>You have <strong>{{ tokens }} tokens</strong> to invest on each of the next
+       <strong>{{ n_trials }}</strong> screens.</p>
+    <p>On every screen you will see <strong>two stocks</strong> and their recent prices.
+       <strong>Split your {{ tokens }} tokens</strong> between the two based on which you
+       think is more likely to keep rising.</p>
+    <p class="muted">There are no right answers — invest according to your own judgment.</p>
+    <a class="btn" href="{{ url_for('trial', n=0) }}">Start investing →</a>
+  </div>
+</body>
+</html>
