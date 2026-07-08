@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UK Invests — Screen {{ n + 1 }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="terminal">
+    <div class="topbar">
+      <div class="brand">UK&nbsp;INVESTS <span class="live">● LIVE</span></div>
+      <div class="progress">Screen {{ n + 1 }} / {{ total }}</div>
+    </div>
+
+    <form id="trialForm" method="post" action="{{ url_for('trial', n=n) }}">
+      <input type="hidden" name="rt_ms" id="rt_ms" value="">
+
+      <div class="stocks">
+        <!-- STOCK A (left) -->
+        <div class="stock">
+          <div class="ticker">STOCK&nbsp;A</div>
+          <div class="prices" id="pricesLeft"></div>
+        </div>
+
+        <!-- STOCK B (right) -->
+        <div class="stock">
+          <div class="ticker">STOCK&nbsp;B</div>
+          <div class="prices" id="pricesRight"></div>
+        </div>
+      </div>
+
+      <!-- ALLOCATION -->
+      <div class="alloc">
+        <label>You have {{ tokens }} tokens. How much do you invest in each stock?</label>
+        <input type="range" id="slider" min="0" max="{{ tokens }}" value="{{ (tokens // 2) }}" step="1">
+        <input type="hidden" name="alloc_left" id="alloc_left" value="{{ (tokens // 2) }}">
+        <div class="alloc-readout">
+          <span>Stock A&nbsp;·&nbsp;<strong id="valLeft">{{ tokens // 2 }}</strong></span>
+          <span><strong id="valRight">{{ tokens - (tokens // 2) }}</strong>&nbsp;·&nbsp;Stock B</span>
+        </div>
+      </div>
+
+      <button class="btn" type="submit">Confirm &amp; continue →</button>
+    </form>
+  </div>
+
+  <script>
+    const TOKENS = {{ tokens }};
+    const DEC = {{ decimals }};
+    const leftPrices  = {{ left_prices | tojson }};
+    const rightPrices = {{ right_prices | tojson }};
+
+    function fmt(p) { return "$" + Number(p).toFixed(DEC); }
+    function renderPrices(elId, arr) {
+      const row = arr.map(p => '<span class="px">' + fmt(p) + '</span>').join('<span class="arrow">→</span>');
+      document.getElementById(elId).innerHTML = row;
+    }
+    renderPrices("pricesLeft", leftPrices);
+    renderPrices("pricesRight", rightPrices);
+
+    const slider = document.getElementById("slider");
+    const allocLeft = document.getElementById("alloc_left");
+    const valLeft = document.getElementById("valLeft");
+    const valRight = document.getElementById("valRight");
+    slider.addEventListener("input", () => {
+      const a = parseInt(slider.value, 10);
+      allocLeft.value = a;
+      valLeft.textContent = a;
+      valRight.textContent = TOKENS - a;
+    });
+
+    const t0 = performance.now();
+    document.getElementById("trialForm").addEventListener("submit", () => {
+      document.getElementById("rt_ms").value = Math.round(performance.now() - t0);
+    });
+  </script>
+</body>
+</html>
