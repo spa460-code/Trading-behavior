@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UK Invests — Screen {{ n + 1 }}</title>
+  <title>Market Simulator — Screen {{ n + 1 }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="terminal">
     <div class="topbar">
-      <div class="brand">UK&nbsp;INVESTS <span class="live">● LIVE</span></div>
+      <div class="brand">MARKET&nbsp;SIM <span class="live">● LIVE</span></div>
       <div class="progress">Screen {{ n + 1 }} / {{ total }}</div>
     </div>
 
@@ -17,20 +17,16 @@
       <input type="hidden" name="rt_ms" id="rt_ms" value="">
 
       <div class="stocks">
-        <!-- STOCK A (left) -->
         <div class="stock">
           <div class="ticker">STOCK&nbsp;A</div>
           <div class="prices" id="pricesLeft"></div>
         </div>
-
-        <!-- STOCK B (right) -->
         <div class="stock">
           <div class="ticker">STOCK&nbsp;B</div>
           <div class="prices" id="pricesRight"></div>
         </div>
       </div>
 
-      <!-- ALLOCATION -->
       <div class="alloc">
         <label>You have {{ tokens }} tokens. How much do you invest in each stock?</label>
         <input type="range" id="slider" min="0" max="{{ tokens }}" value="{{ (tokens // 2) }}" step="1">
