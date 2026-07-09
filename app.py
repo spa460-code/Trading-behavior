@@ -145,7 +145,13 @@ def trial(n):
         alloc_right = TOKENS_PER_TRIAL - alloc_left
         rt_ms = request.form.get("rt_ms", type=int)
 
-        crossing_share = alloc_left if step["crossing_side"] == "left" else alloc_right
+        is_filler = pair.get("filler", False)
+        if is_filler:
+            crossing_side = "none"
+            crossing_share = None            # fillers are not part of the DV
+        else:
+            crossing_side = step["crossing_side"]
+            crossing_share = alloc_left if crossing_side == "left" else alloc_right
 
         db = get_db()
         db.execute(
@@ -154,7 +160,7 @@ def trial(n):
                 alloc_left, alloc_right, crossing_share, rt_ms, answered_at)
                VALUES (?,?,?,?,?,?,?,?,?,?)""",
             (session["pid"], n, pair["pair_id"], pair["round_number"],
-             step["crossing_side"], alloc_left, alloc_right,
+             crossing_side, alloc_left, alloc_right,
              crossing_share, rt_ms, datetime.now(timezone.utc).isoformat()),
         )
         db.commit()
@@ -179,11 +185,14 @@ def finish():
 
     # Compact results to hand back to Qualtrics: crossing share per pair_id.
     rows = db.execute(
-        "SELECT pair_id, crossing_share FROM trials WHERE pid=?", (pid,)
+        "SELECT pair_id, crossing_share, rt_ms FROM trials WHERE pid=?", (pid,)
     ).fetchall()
     params = {"PROLIFIC_PID": pid, "task_complete": 1}
     for r in rows:
+        if r["crossing_share"] is None:      # filler trial — not part of the DV
+            continue
         params[f"cross_p{r['pair_id']}"] = r["crossing_share"]
+        params[f"rt_p{r['pair_id']}"] = r["rt_ms"]
 
     session.clear()
     return redirect(f"{QUALTRICS_RETURN_URL}?{urlencode(params)}")
