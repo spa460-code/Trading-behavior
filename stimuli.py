@@ -56,6 +56,35 @@ PAIRS = [
         "noncrossing":  [1030, 1045, 1060],   # +2.91%
         "decimals": 0,
     },
+
+    # ---- FILLER pairs: BOTH stocks non-round, no crossing. -------------
+    # Shown to participants but NOT part of the DV (never passed to Qualtrics).
+    # "crossing"/"noncrossing" here are just left/right labels — neither
+    # sequence lands on or crosses a salient round number.
+    {
+        "pair_id": 7,
+        "round_number": None,
+        "crossing":     [64.36, 65.46, 66.32],
+        "noncrossing":  [71.28, 72.41, 73.55],
+        "decimals": 2,
+        "filler": True,
+    },
+    {
+        "pair_id": 8,
+        "round_number": None,
+        "crossing":     [23.17, 23.61, 24.08],
+        "noncrossing":  [38.44, 39.02, 39.63],
+        "decimals": 2,
+        "filler": True,
+    },
+    {
+        "pair_id": 9,
+        "round_number": None,
+        "crossing":     [142.30, 144.10, 145.80],
+        "noncrossing":  [213.40, 215.10, 216.80],
+        "decimals": 2,
+        "filler": True,
+    },
 ]
 
 TOKENS_PER_TRIAL = 10   # budget to split on each screen
