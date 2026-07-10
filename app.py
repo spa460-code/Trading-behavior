@@ -33,7 +33,7 @@ from flask import (
 from stimuli import PAIRS, TOKENS_PER_TRIAL, MOMENTUM_MIN, MOMENTUM_MAX
 
 # ---------------------------------------------------------------- config
-QUALTRICS_RETURN_URL = "https://uky.az1.qualtrics.com/jfe/form/SV_eLfSjv2MLBd4cDQ"
+QUALTRICS_RETURN_URL = "https://YOUR-UNIVERSITY.qualtrics.com/jfe/form/SV_XXXX"
 SECRET_KEY = "change-me-to-a-long-random-string-before-deploying"
 DB_PATH = os.path.join(os.path.dirname(__file__), "trading_sim.sqlite")
 
@@ -185,14 +185,17 @@ def finish():
 
     # Compact results to hand back to Qualtrics: crossing share per pair_id.
     rows = db.execute(
-        "SELECT pair_id, crossing_share, rt_ms FROM trials WHERE pid=?", (pid,)
+        "SELECT pair_id, crossing_share, rt_ms, crossing_side, alloc_left "
+        "FROM trials WHERE pid=?", (pid,)
     ).fetchall()
     params = {"PROLIFIC_PID": pid, "task_complete": 1}
     for r in rows:
-        if r["crossing_share"] is None:      # filler trial — not part of the DV
-            continue
-        params[f"cross_p{r['pair_id']}"] = r["crossing_share"]
-        params[f"rt_p{r['pair_id']}"] = r["rt_ms"]
+        if r["crossing_share"] is None:      # filler trial — attention check
+            params[f"fill_p{r['pair_id']}"] = r["alloc_left"]
+        else:                                # real pair — the DV
+            params[f"cross_p{r['pair_id']}"] = r["crossing_share"]
+            params[f"rt_p{r['pair_id']}"] = r["rt_ms"]
+            params[f"side_p{r['pair_id']}"] = r["crossing_side"]
 
     session.clear()
     return redirect(f"{QUALTRICS_RETURN_URL}?{urlencode(params)}")
