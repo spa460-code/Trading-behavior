@@ -59,30 +59,30 @@ PAIRS = [
 
     # ---- FILLER pairs: BOTH stocks non-round, no crossing. -------------
     # Shown to participants but NOT part of the DV (never passed to Qualtrics).
-    # "crossing"/"noncrossing" here are just left/right labels — neither
-    # sequence lands on or crosses a salient round number.
+    # Clean whole-number prices; neither sequence touches or crosses a
+    # salient round number (no multiples of 10/100, no .00).
     {
         "pair_id": 7,
         "round_number": None,
-        "crossing":     [64.36, 65.46, 66.32],
-        "noncrossing":  [71.28, 72.41, 73.55],
-        "decimals": 2,
+        "crossing":     [134, 136, 138],
+        "noncrossing":  [262, 264, 266],
+        "decimals": 0,
         "filler": True,
     },
     {
         "pair_id": 8,
         "round_number": None,
-        "crossing":     [23.17, 23.61, 24.08],
-        "noncrossing":  [38.44, 39.02, 39.63],
-        "decimals": 2,
+        "crossing":     [43, 44, 46],
+        "noncrossing":  [326, 327, 329],
+        "decimals": 0,
         "filler": True,
     },
     {
         "pair_id": 9,
         "round_number": None,
-        "crossing":     [142.30, 144.10, 145.80],
-        "noncrossing":  [213.40, 215.10, 216.80],
-        "decimals": 2,
+        "crossing":     [71, 73, 74],
+        "noncrossing":  [182, 184, 186],
+        "decimals": 0,
         "filler": True,
     },
 ]
