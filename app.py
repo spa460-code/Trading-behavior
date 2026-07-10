@@ -33,7 +33,7 @@ from flask import (
 from stimuli import PAIRS, TOKENS_PER_TRIAL, MOMENTUM_MIN, MOMENTUM_MAX
 
 # ---------------------------------------------------------------- config
-QUALTRICS_RETURN_URL = "https://YOUR-UNIVERSITY.qualtrics.com/jfe/form/SV_XXXX"
+QUALTRICS_RETURN_URL = "https://uky.az1.qualtrics.com/jfe/form/SV_eLfSjv2MLBd4cDQ"
 SECRET_KEY = "change-me-to-a-long-random-string-before-deploying"
 DB_PATH = os.path.join(os.path.dirname(__file__), "trading_sim.sqlite")
 
