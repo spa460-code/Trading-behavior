@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Market Simulator — Screen {{ n + 1 }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+    .hint { color: var(--mute); font-size: 14px; }
+    #slider.untouched { opacity: .55; }
+  </style>
 </head>
 <body>
   <div class="terminal">
@@ -29,15 +34,14 @@
 
       <div class="alloc">
         <label>You have {{ tokens }} tokens. How much do you invest in each stock?</label>
-        <input type="range" id="slider" min="0" max="{{ tokens }}" value="{{ (tokens // 2) }}" step="1">
-        <input type="hidden" name="alloc_left" id="alloc_left" value="{{ (tokens // 2) }}">
-        <div class="alloc-readout">
-          <span>Stock A&nbsp;·&nbsp;<strong id="valLeft">{{ tokens // 2 }}</strong></span>
-          <span><strong id="valRight">{{ tokens - (tokens // 2) }}</strong>&nbsp;·&nbsp;Stock B</span>
+        <input type="range" id="slider" class="untouched" min="0" max="{{ tokens }}" value="{{ (tokens // 2) }}" step="1">
+        <input type="hidden" name="alloc_left" id="alloc_left" value="">
+        <div class="alloc-readout" id="readout">
+          <span class="hint">Drag the slider to divide your {{ tokens }} tokens between the two stocks.</span>
         </div>
       </div>
 
-      <button class="btn" type="submit">Confirm &amp; continue →</button>
+      <button class="btn" type="submit" id="confirmBtn" disabled>Confirm &amp; continue →</button>
     </form>
   </div>
 
@@ -55,19 +59,35 @@
     renderPrices("pricesLeft", leftPrices);
     renderPrices("pricesRight", rightPrices);
 
-    const slider = document.getElementById("slider");
-    const allocLeft = document.getElementById("alloc_left");
-    const valLeft = document.getElementById("valLeft");
-    const valRight = document.getElementById("valRight");
-    slider.addEventListener("input", () => {
+    const slider   = document.getElementById("slider");
+    const allocLeft= document.getElementById("alloc_left");
+    const readout  = document.getElementById("readout");
+    const confirmBtn = document.getElementById("confirmBtn");
+    let touched = false;
+
+    function updateReadout() {
       const a = parseInt(slider.value, 10);
       allocLeft.value = a;
-      valLeft.textContent = a;
-      valRight.textContent = TOKENS - a;
-    });
+      readout.innerHTML =
+        '<span>Stock A&nbsp;·&nbsp;<strong>' + a + '</strong></span>' +
+        '<span><strong>' + (TOKENS - a) + '</strong>&nbsp;·&nbsp;Stock B</span>';
+    }
+    // First interaction: unlock the button and start showing the split.
+    function onInteract() {
+      if (!touched) {
+        touched = true;
+        slider.classList.remove("untouched");
+        confirmBtn.disabled = false;
+      }
+      updateReadout();
+    }
+    slider.addEventListener("input", onInteract);
+    slider.addEventListener("change", onInteract);
 
+    // Safety: never submit without a deliberate choice.
     const t0 = performance.now();
-    document.getElementById("trialForm").addEventListener("submit", () => {
+    document.getElementById("trialForm").addEventListener("submit", function(e){
+      if (!touched) { e.preventDefault(); return; }
       document.getElementById("rt_ms").value = Math.round(performance.now() - t0);
     });
   </script>
