@@ -7,8 +7,33 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
     .btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
-    .hint { color: var(--mute); font-size: 14px; }
-    #slider.untouched { opacity: .55; }
+    .hint { color: var(--mute, #9aa4b2); font-size: 14px; text-align:center; }
+
+    .bars {
+      display: flex; justify-content: center; align-items: flex-end;
+      gap: 64px; margin: 26px 0 10px;
+    }
+    .barwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .barname  { font-size: 13px; letter-spacing: .12em; color: var(--mute, #9aa4b2); }
+    .barcount { font-size: 22px; font-weight: 700; min-height: 26px; }
+    .track {
+      width: 78px; height: 230px; position: relative; cursor: pointer;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px; overflow: hidden; touch-action: none;
+    }
+    .fill {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+      background: var(--accent, #4c8dff); transition: height .07s linear;
+    }
+    .ticks { font-size: 11px; color: var(--mute, #9aa4b2); }
+    .steppers { display: flex; gap: 8px; }
+    .step {
+      width: 34px; height: 30px; border-radius: 7px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06);
+      color: inherit; font-size: 18px; line-height: 1; font-weight: 700;
+    }
+    .step:active { background: rgba(255,255,255,.16); }
+    .total { text-align:center; font-size: 13px; color: var(--mute, #9aa4b2); margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -20,6 +45,7 @@
 
     <form id="trialForm" method="post" action="{{ url_for('trial', n=n) }}">
       <input type="hidden" name="rt_ms" id="rt_ms" value="">
+      <input type="hidden" name="alloc_left" id="alloc_left" value="">
 
       <div class="stocks">
         <div class="stock">
@@ -33,11 +59,38 @@
       </div>
 
       <div class="alloc">
-        <label>You have {{ tokens }} tokens. How much do you invest in each stock?</label>
-        <input type="range" id="slider" class="untouched" min="0" max="{{ tokens }}" value="{{ (tokens // 2) }}" step="1">
-        <input type="hidden" name="alloc_left" id="alloc_left" value="">
-        <div class="alloc-readout" id="readout">
-          <span class="hint">Drag the slider to divide your {{ tokens }} tokens between the two stocks.</span>
+        <label>Invest your {{ tokens }} tokens: give more to one stock and the other goes down.</label>
+
+        <div class="bars">
+          <!-- STOCK A bar -->
+          <div class="barwrap">
+            <div class="barcount" id="countA">–</div>
+            <div class="track" id="trackA" data-stock="A">
+              <div class="fill" id="fillA"></div>
+            </div>
+            <div class="steppers">
+              <button type="button" class="step" data-stock="A" data-dir="-1">−</button>
+              <button type="button" class="step" data-stock="A" data-dir="1">+</button>
+            </div>
+            <div class="barname">STOCK&nbsp;A</div>
+          </div>
+
+          <!-- STOCK B bar -->
+          <div class="barwrap">
+            <div class="barcount" id="countB">–</div>
+            <div class="track" id="trackB" data-stock="B">
+              <div class="fill" id="fillB"></div>
+            </div>
+            <div class="steppers">
+              <button type="button" class="step" data-stock="B" data-dir="-1">−</button>
+              <button type="button" class="step" data-stock="B" data-dir="1">+</button>
+            </div>
+            <div class="barname">STOCK&nbsp;B</div>
+          </div>
+        </div>
+
+        <div class="total" id="totalMsg">
+          <span class="hint">Click a bar (or use − / +) to divide your {{ tokens }} tokens. The two must total {{ tokens }}.</span>
         </div>
       </div>
 
@@ -59,32 +112,73 @@
     renderPrices("pricesLeft", leftPrices);
     renderPrices("pricesRight", rightPrices);
 
-    const slider   = document.getElementById("slider");
-    const allocLeft= document.getElementById("alloc_left");
-    const readout  = document.getElementById("readout");
+    const allocLeft  = document.getElementById("alloc_left"); // tokens on Stock A
     const confirmBtn = document.getElementById("confirmBtn");
+    const countA = document.getElementById("countA");
+    const countB = document.getElementById("countB");
+    const fillA  = document.getElementById("fillA");
+    const fillB  = document.getElementById("fillB");
+    const totalMsg = document.getElementById("totalMsg");
+    const trackA = document.getElementById("trackA");
+    const trackB = document.getElementById("trackB");
+
+    let a = null;        // tokens on Stock A (null until first interaction)
     let touched = false;
 
-    function updateReadout() {
-      const a = parseInt(slider.value, 10);
+    function render() {
+      if (a === null) return;
+      const b = TOKENS - a;
+      countA.textContent = a;
+      countB.textContent = b;
+      fillA.style.height = (a / TOKENS * 100) + "%";
+      fillB.style.height = (b / TOKENS * 100) + "%";
+      totalMsg.innerHTML = "Stock A: <strong>" + a + "</strong>  +  Stock B: <strong>" + b +
+                           "</strong>  =  " + TOKENS + " tokens";
+    }
+    function setA(val) {
+      a = Math.max(0, Math.min(TOKENS, Math.round(val)));
       allocLeft.value = a;
-      readout.innerHTML =
-        '<span>Stock A&nbsp;·&nbsp;<strong>' + a + '</strong></span>' +
-        '<span><strong>' + (TOKENS - a) + '</strong>&nbsp;·&nbsp;Stock B</span>';
+      if (!touched) { touched = true; confirmBtn.disabled = false; }
+      render();
     }
-    // First interaction: unlock the button and start showing the split.
-    function onInteract() {
-      if (!touched) {
-        touched = true;
-        slider.classList.remove("untouched");
-        confirmBtn.disabled = false;
-      }
-      updateReadout();
+    function setFromStock(stock, val) {
+      if (stock === "A") setA(val);
+      else setA(TOKENS - val);   // giving Stock B `val` means Stock A gets the rest
     }
-    slider.addEventListener("input", onInteract);
-    slider.addEventListener("change", onInteract);
 
-    // Safety: never submit without a deliberate choice.
+    // Click / drag on a bar sets that stock's tokens from the vertical position.
+    function valueFromEvent(track, e) {
+      const rect = track.getBoundingClientRect();
+      const y = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
+      const frac = 1 - (y / rect.height);          // bottom = 0, top = full
+      return Math.max(0, Math.min(TOKENS, frac * TOKENS));
+    }
+    function wireTrack(track) {
+      const stock = track.dataset.stock;
+      let dragging = false;
+      track.addEventListener("pointerdown", (e) => {
+        dragging = true; track.setPointerCapture(e.pointerId);
+        setFromStock(stock, valueFromEvent(track, e));
+      });
+      track.addEventListener("pointermove", (e) => {
+        if (dragging) setFromStock(stock, valueFromEvent(track, e));
+      });
+      track.addEventListener("pointerup",   () => { dragging = false; });
+      track.addEventListener("pointercancel",() => { dragging = false; });
+    }
+    wireTrack(trackA); wireTrack(trackB);
+
+    // +/- steppers
+    document.querySelectorAll(".step").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const stock = btn.dataset.stock;
+        const dir = parseInt(btn.dataset.dir, 10);
+        const cur = (a === null) ? 0 : (stock === "A" ? a : TOKENS - a);
+        setFromStock(stock, cur + dir);
+      });
+    });
+
+    // RT + forced-choice guard
     const t0 = performance.now();
     document.getElementById("trialForm").addEventListener("submit", function(e){
       if (!touched) { e.preventDefault(); return; }
