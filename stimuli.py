@@ -1,54 +1,44 @@
 """
-Stimulus set: 6 matched head-to-head pairs + 3 fillers.
+Stimulus set: 6 matched head-to-head pairs + 3 fillers (updated set).
 
-COUNTERBALANCED DESIGN (controls for price level):
-  - In 3 pairs the crossing stock is the LOWER-priced of the two (twin sits above).
-  - In 3 pairs the crossing stock is the HIGHER-priced of the two (twin sits below).
-  So across the set, "crossing" is not systematically the cheaper or pricier stock.
+Pairing (by list position), counterbalanced 3/3 on price level:
+  Pair 1: crossing HIGHER   Pair 2: crossing LOWER
+  Pair 3: crossing LOWER    Pair 4: crossing HIGHER
+  Pair 5: crossing HIGHER   Pair 6: crossing LOWER
 
 In every real pair:
-  - The CROSSING stock lands exactly on the round number at T2 (max salience).
-  - The twin NEVER touches or crosses a salient round number.
-  - Both sequences are rising and linear (equal step within each stock -> no
-    deceleration confound).
-  - % change is closely matched; the crossing stock rises a hair more on average.
-
-Price levels reuse magnitudes validated in Studies 2a / 2b / 3.
+  - CROSSING stock lands exactly on the round number at T2.
+  - Twin never touches or crosses a multiple of 10 ($ pairs) / 1.00 (decimal pairs).
+  - Both rising, linear, identical absolute step within pair (3 or 0.30).
 """
 
 PAIRS = [
-    # ---- Pair 1: round 1.00 | crossing LOWER (twin above) ----
-    {   "pair_id": 1, "round_number": 1.00, "decimals": 2,
-        "crossing":    [0.98, 1.00, 1.02],   # +4.08%
-        "noncrossing": [1.04, 1.06, 1.08],   # +3.85%, sits above 1.00
+    {   "pair_id": 1, "round_number": 100, "decimals": 0,
+        "crossing":    [97, 100, 103],
+        "noncrossing": [93, 96, 99],          # below -> crossing HIGHER
     },
-    # ---- Pair 2: round 10.00 | crossing HIGHER (twin below) ----
-    {   "pair_id": 2, "round_number": 10.00, "decimals": 2,
-        "crossing":    [9.90, 10.00, 10.10], # +2.02%
-        "noncrossing": [9.60, 9.70, 9.80],   # +2.08%, stays below 10.00
+    {   "pair_id": 2, "round_number": 90, "decimals": 0,
+        "crossing":    [87, 90, 93],
+        "noncrossing": [101, 104, 107],       # above -> crossing LOWER
     },
-    # ---- Pair 3: round 100 | crossing LOWER (twin above) ----
-    {   "pair_id": 3, "round_number": 100, "decimals": 0,
-        "crossing":    [98, 100, 102],       # +4.08%
-        "noncrossing": [104, 106, 108],      # +3.85%, sits above 100
+    {   "pair_id": 3, "round_number": 50, "decimals": 0,
+        "crossing":    [47, 50, 53],
+        "noncrossing": [53, 56, 59],          # above -> crossing LOWER
     },
-    # ---- Pair 4: round 150 | crossing HIGHER (twin below) ----
-    {   "pair_id": 4, "round_number": 150, "decimals": 0,
-        "crossing":    [149, 150, 151],      # +1.34%
-        "noncrossing": [146, 147, 148],      # +1.37%, stays below 150
+    {   "pair_id": 4, "round_number": 60, "decimals": 0,
+        "crossing":    [57, 60, 63],
+        "noncrossing": [41, 44, 47],          # below -> crossing HIGHER
     },
-    # ---- Pair 5: round 500 | crossing LOWER (twin above) ----
-    {   "pair_id": 5, "round_number": 500, "decimals": 0,
-        "crossing":    [495, 500, 505],      # +2.02%
-        "noncrossing": [510, 515, 520],      # +1.96%, sits above 500
+    {   "pair_id": 5, "round_number": 10.00, "decimals": 2,
+        "crossing":    [9.70, 10.00, 10.30],
+        "noncrossing": [9.30, 9.60, 9.90],    # below -> crossing HIGHER
     },
-    # ---- Pair 6: round 1000 | crossing HIGHER (twin below) ----
-    {   "pair_id": 6, "round_number": 1000, "decimals": 0,
-        "crossing":    [995, 1000, 1005],    # +1.01%
-        "noncrossing": [984, 989, 994],      # +1.02%, stays below 1000
+    {   "pair_id": 6, "round_number": 9.00, "decimals": 2,
+        "crossing":    [8.70, 9.00, 9.30],
+        "noncrossing": [10.30, 10.60, 10.90], # above -> crossing LOWER
     },
 
-    # ---- FILLER pairs: BOTH stocks non-round, no crossing (attention checks) ----
+    # ---- FILLER pairs (unchanged): both non-round, attention check only ---
     {   "pair_id": 7, "round_number": None, "decimals": 0,
         "crossing":    [134, 136, 138],
         "noncrossing": [262, 264, 266], "filler": True,
