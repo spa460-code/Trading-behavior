@@ -6,34 +6,29 @@
   <title>Market Simulator — Screen {{ n + 1 }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-    .btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
-    .hint { color: var(--mute, #9aa4b2); font-size: 14px; text-align:center; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+    .hint { color: var(--mute); font-size: 14px; text-align: center; }
 
-    .bars {
-      display: flex; justify-content: center; align-items: flex-end;
-      gap: 64px; margin: 26px 0 10px;
-    }
+    .bars { display: flex; justify-content: center; align-items: flex-end;
+            gap: 64px; margin: 24px 0 10px; }
     .barwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .barname  { font-size: 13px; letter-spacing: .12em; color: var(--mute, #9aa4b2); }
-    .barcount { font-size: 22px; font-weight: 700; min-height: 26px; }
+    .barname  { font-size: 13px; letter-spacing: .12em; color: var(--mute); }
+    .barcount { font-size: 22px; font-weight: 700; min-height: 26px; color: var(--ink); }
     .track {
       width: 78px; height: 230px; position: relative; cursor: pointer;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+      background: #eef1f6; border: 1px solid var(--line);
       border-radius: 10px; overflow: hidden; touch-action: none;
     }
-    .fill {
-      position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
-      background: var(--accent, #4c8dff); transition: height .07s linear;
-    }
-    .ticks { font-size: 11px; color: var(--mute, #9aa4b2); }
+    .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+            background: var(--accent); transition: height .07s linear; }
     .steppers { display: flex; gap: 8px; }
     .step {
       width: 34px; height: 30px; border-radius: 7px; cursor: pointer;
-      border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06);
-      color: inherit; font-size: 18px; line-height: 1; font-weight: 700;
+      border: 1px solid var(--line); background: #f2f4f8;
+      color: var(--ink); font-size: 18px; line-height: 1; font-weight: 700;
     }
-    .step:active { background: rgba(255,255,255,.16); }
-    .total { text-align:center; font-size: 13px; color: var(--mute, #9aa4b2); margin-top: 4px; }
+    .step:active { background: #e2e7ef; }
+    .total { text-align: center; font-size: 14px; color: var(--mute); margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -62,12 +57,9 @@
         <label>Invest your {{ tokens }} tokens: give more to one stock and the other goes down.</label>
 
         <div class="bars">
-          <!-- STOCK A bar -->
           <div class="barwrap">
             <div class="barcount" id="countA">–</div>
-            <div class="track" id="trackA" data-stock="A">
-              <div class="fill" id="fillA"></div>
-            </div>
+            <div class="track" id="trackA" data-stock="A"><div class="fill" id="fillA"></div></div>
             <div class="steppers">
               <button type="button" class="step" data-stock="A" data-dir="-1">−</button>
               <button type="button" class="step" data-stock="A" data-dir="1">+</button>
@@ -75,12 +67,9 @@
             <div class="barname">STOCK&nbsp;A</div>
           </div>
 
-          <!-- STOCK B bar -->
           <div class="barwrap">
             <div class="barcount" id="countB">–</div>
-            <div class="track" id="trackB" data-stock="B">
-              <div class="fill" id="fillB"></div>
-            </div>
+            <div class="track" id="trackB" data-stock="B"><div class="fill" id="fillB"></div></div>
             <div class="steppers">
               <button type="button" class="step" data-stock="B" data-dir="-1">−</button>
               <button type="button" class="step" data-stock="B" data-dir="1">+</button>
@@ -112,7 +101,7 @@
     renderPrices("pricesLeft", leftPrices);
     renderPrices("pricesRight", rightPrices);
 
-    const allocLeft  = document.getElementById("alloc_left"); // tokens on Stock A
+    const allocLeft  = document.getElementById("alloc_left");
     const confirmBtn = document.getElementById("confirmBtn");
     const countA = document.getElementById("countA");
     const countB = document.getElementById("countB");
@@ -122,7 +111,7 @@
     const trackA = document.getElementById("trackA");
     const trackB = document.getElementById("trackB");
 
-    let a = null;        // tokens on Stock A (null until first interaction)
+    let a = null;
     let touched = false;
 
     function render() {
@@ -132,8 +121,8 @@
       countB.textContent = b;
       fillA.style.height = (a / TOKENS * 100) + "%";
       fillB.style.height = (b / TOKENS * 100) + "%";
-      totalMsg.innerHTML = "Stock A: <strong>" + a + "</strong>  +  Stock B: <strong>" + b +
-                           "</strong>  =  " + TOKENS + " tokens";
+      totalMsg.innerHTML = "Stock A: <strong>" + a + "</strong> &nbsp;+&nbsp; Stock B: <strong>" + b +
+                           "</strong> &nbsp;=&nbsp; " + TOKENS + " tokens";
     }
     function setA(val) {
       a = Math.max(0, Math.min(TOKENS, Math.round(val)));
@@ -143,14 +132,12 @@
     }
     function setFromStock(stock, val) {
       if (stock === "A") setA(val);
-      else setA(TOKENS - val);   // giving Stock B `val` means Stock A gets the rest
+      else setA(TOKENS - val);
     }
-
-    // Click / drag on a bar sets that stock's tokens from the vertical position.
     function valueFromEvent(track, e) {
       const rect = track.getBoundingClientRect();
       const y = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
-      const frac = 1 - (y / rect.height);          // bottom = 0, top = full
+      const frac = 1 - (y / rect.height);
       return Math.max(0, Math.min(TOKENS, frac * TOKENS));
     }
     function wireTrack(track) {
@@ -160,15 +147,12 @@
         dragging = true; track.setPointerCapture(e.pointerId);
         setFromStock(stock, valueFromEvent(track, e));
       });
-      track.addEventListener("pointermove", (e) => {
-        if (dragging) setFromStock(stock, valueFromEvent(track, e));
-      });
-      track.addEventListener("pointerup",   () => { dragging = false; });
+      track.addEventListener("pointermove", (e) => { if (dragging) setFromStock(stock, valueFromEvent(track, e)); });
+      track.addEventListener("pointerup",    () => { dragging = false; });
       track.addEventListener("pointercancel",() => { dragging = false; });
     }
     wireTrack(trackA); wireTrack(trackB);
 
-    // +/- steppers
     document.querySelectorAll(".step").forEach(btn => {
       btn.addEventListener("click", () => {
         const stock = btn.dataset.stock;
@@ -178,7 +162,6 @@
       });
     });
 
-    // RT + forced-choice guard
     const t0 = performance.now();
     document.getElementById("trialForm").addEventListener("submit", function(e){
       if (!touched) { e.preventDefault(); return; }
