@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Simulator — Screen {{ n + 1 }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+    .hint { color: var(--mute); font-size: 14px; text-align: center; }
+
+    .bars { display: flex; justify-content: center; align-items: flex-end;
+            gap: 64px; margin: 24px 0 10px; }
+    .barwrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .barname  { font-size: 13px; letter-spacing: .12em; color: var(--mute); }
+    .barcount { font-size: 22px; font-weight: 700; min-height: 26px; color: var(--ink); }
+    .track {
+      width: 78px; height: 230px; position: relative; cursor: pointer;
+      background: #eef1f6; border: 1px solid var(--line);
+      border-radius: 10px; overflow: hidden; touch-action: none;
+    }
+    .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0%;
+            background: var(--accent); transition: height .07s linear; }
+    .steppers { display: flex; gap: 8px; }
+    .step {
+      width: 34px; height: 30px; border-radius: 7px; cursor: pointer;
+      border: 1px solid var(--line); background: #f2f4f8;
+      color: var(--ink); font-size: 18px; line-height: 1; font-weight: 700;
+    }
+    .step:active { background: #e2e7ef; }
+    .total { text-align: center; font-size: 14px; color: var(--mute); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="topbar">
+      <div class="brand">MARKET&nbsp;SIM <span class="live">● LIVE</span></div>
+      <div class="progress">Screen {{ n + 1 }} / {{ total }}</div>
+    </div>
+
+    <form id="trialForm" method="post" action="{{ url_for('trial', n=n) }}">
+      <input type="hidden" name="rt_ms" id="rt_ms" value="">
+      <input type="hidden" name="alloc_left" id="alloc_left" value="">
+
+      <div class="stocks">
+        <div class="stock">
+          <div class="ticker">STOCK&nbsp;A</div>
+          <div class="prices" id="pricesLeft"></div>
+        </div>
+        <div class="stock">
+          <div class="ticker">STOCK&nbsp;B</div>
+          <div class="prices" id="pricesRight"></div>
+        </div>
+      </div>
+
+      <div class="alloc">
+        <label>Invest your {{ tokens }} tokens: give more to one stock and the other goes down.</label>
+
+        <div class="bars">
+          <div class="barwrap">
+            <div class="barcount" id="countA">–</div>
+            <div class="track" id="trackA" data-stock="A"><div class="fill" id="fillA"></div></div>
+            <div class="steppers">
+              <button type="button" class="step" data-stock="A" data-dir="-1">−</button>
+              <button type="button" class="step" data-stock="A" data-dir="1">+</button>
+            </div>
+            <div class="barname">STOCK&nbsp;A</div>
+          </div>
+
+          <div class="barwrap">
+            <div class="barcount" id="countB">–</div>
+            <div class="track" id="trackB" data-stock="B"><div class="fill" id="fillB"></div></div>
+            <div class="steppers">
+              <button type="button" class="step" data-stock="B" data-dir="-1">−</button>
+              <button type="button" class="step" data-stock="B" data-dir="1">+</button>
+            </div>
+            <div class="barname">STOCK&nbsp;B</div>
+          </div>
+        </div>
+
+        <div class="total" id="totalMsg">
+          <span class="hint">Click a bar (or use − / +) to divide your {{ tokens }} tokens. The two must total {{ tokens }}.</span>
+        </div>
+      </div>
+
+      <button class="btn" type="submit" id="confirmBtn" disabled>Confirm &amp; continue →</button>
+    </form>
+  </div>
+
+  <script>
+    const TOKENS = {{ tokens }};
+    const DEC = {{ decimals }};
+    const leftPrices  = {{ left_prices | tojson }};
+    const rightPrices = {{ right_prices | tojson }};
+
+    function fmt(p) { return "$" + Number(p).toFixed(DEC); }
+    function renderPrices(elId, arr) {
+      const row = arr.map(p => '<span class="px">' + fmt(p) + '</span>').join('<span class="arrow">→</span>');
+      document.getElementById(elId).innerHTML = row;
+    }
+    renderPrices("pricesLeft", leftPrices);
+    renderPrices("pricesRight", rightPrices);
+
+    const allocLeft  = document.getElementById("alloc_left");
+    const confirmBtn = document.getElementById("confirmBtn");
+    const countA = document.getElementById("countA");
+    const countB = document.getElementById("countB");
+    const fillA  = document.getElementById("fillA");
+    const fillB  = document.getElementById("fillB");
+    const totalMsg = document.getElementById("totalMsg");
+    const trackA = document.getElementById("trackA");
+    const trackB = document.getElementById("trackB");
+
+    let a = null;
+    let touched = false;
+
+    function render() {
+      if (a === null) return;
+      const b = TOKENS - a;
+      countA.textContent = a;
+      countB.textContent = b;
+      fillA.style.height = (a / TOKENS * 100) + "%";
+      fillB.style.height = (b / TOKENS * 100) + "%";
+      totalMsg.innerHTML = "Stock A: <strong>" + a + "</strong> &nbsp;+&nbsp; Stock B: <strong>" + b +
+                           "</strong> &nbsp;=&nbsp; " + TOKENS + " tokens";
+    }
+    function setA(val) {
+      a = Math.max(0, Math.min(TOKENS, Math.round(val)));
+      allocLeft.value = a;
+      if (!touched) { touched = true; confirmBtn.disabled = false; }
+      render();
+    }
+    function setFromStock(stock, val) {
+      if (stock === "A") setA(val);
+      else setA(TOKENS - val);
+    }
+    function valueFromEvent(track, e) {
+      const rect = track.getBoundingClientRect();
+      const y = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - rect.top;
+      const frac = 1 - (y / rect.height);
+      return Math.max(0, Math.min(TOKENS, frac * TOKENS));
+    }
+    function wireTrack(track) {
+      const stock = track.dataset.stock;
+      let dragging = false;
+      track.addEventListener("pointerdown", (e) => {
+        dragging = true; track.setPointerCapture(e.pointerId);
+        setFromStock(stock, valueFromEvent(track, e));
+      });
+      track.addEventListener("pointermove", (e) => { if (dragging) setFromStock(stock, valueFromEvent(track, e)); });
+      track.addEventListener("pointerup",    () => { dragging = false; });
+      track.addEventListener("pointercancel",() => { dragging = false; });
+    }
+    wireTrack(trackA); wireTrack(trackB);
+
+    document.querySelectorAll(".step").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const stock = btn.dataset.stock;
+        const dir = parseInt(btn.dataset.dir, 10);
+        const cur = (a === null) ? 0 : (stock === "A" ? a : TOKENS - a);
+        setFromStock(stock, cur + dir);
+      });
+    });
+
+    const t0 = performance.now();
+    document.getElementById("trialForm").addEventListener("submit", function(e){
+      if (!touched) { e.preventDefault(); return; }
+      document.getElementById("rt_ms").value = Math.round(performance.now() - t0);
+    });
+  </script>
+</body>
+</html>
