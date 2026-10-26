@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Simulator — Stock {{ n + 1 }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="terminal">
+    <div class="topbar">
+      <div class="brand">MARKET&nbsp;SIM <span class="live">● LIVE</span></div>
+      <div class="progress">Stock {{ n + 1 }} / {{ total }}</div>
+    </div>
+    <div class="stocks">{% include "_prices.html" %}</div>
+
+    <form id="trialForm" method="post" action="{{ url_for('trial', n=n, page='belief') }}">
+      <input type="hidden" name="rt_ms" id="rt_ms" value="">
+      <input type="hidden" name="belief" id="belief" value="">
+      <div class="qblock" id="qBelief" style="visibility:hidden">
+        <div class="qtext">How likely is it that this trend continues in the same direction?</div>
+        <div class="scale" id="scale">
+          {% for v in range(bmin, bmax + 1) %}<button type="button" class="pt" data-v="{{ v }}">{{ v }}</button>{% endfor %}
+        </div>
+        <div class="anchors"><span>Very likely to reverse</span><span>Very likely to continue</span></div>
+      </div>
+      <button class="btn" type="submit" id="nextBtn" disabled>Continue →</button>
+    </form>
+  </div>
+
+  <script>
+    const t0 = performance.now();
+    const bIn = document.getElementById("belief"), nextBtn = document.getElementById("nextBtn");
+    revealPrices(() => { document.getElementById("qBelief").style.visibility = "visible"; });
+    document.querySelectorAll(".pt").forEach(b => b.addEventListener("click", () => {
+      document.querySelectorAll(".pt").forEach(x => x.classList.remove("on")); b.classList.add("on");
+      bIn.value = b.dataset.v; nextBtn.disabled = false;
+    }));
+    document.getElementById("trialForm").addEventListener("submit", e => {
+      if (!bIn.value) { e.preventDefault(); return; }
+      document.getElementById("rt_ms").value = Math.round(performance.now() - t0);
+    });
+  </script>
+</body>
+</html>

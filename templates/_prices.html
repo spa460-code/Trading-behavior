@@ -1,0 +1,22 @@
+<div class="stock single">
+  <div class="ticker">STOCK&nbsp;{{ 'ABCDEFGHIJKL'[n] }} &nbsp;·&nbsp; you own {{ shares }} shares</div>
+  <div class="prices" id="prices"></div>
+</div>
+<script>
+  const PRICES = {{ prices | tojson }}; const DEC = {{ decimals }}; const REVEAL = {{ reveal_ms }};
+  const FIRST = {{ 'true' if first_page else 'false' }};
+  function fmt(p){ return "$" + Number(p).toFixed(DEC); }
+  function showPrices(upTo){
+    let h = "";
+    for (let i = 0; i < PRICES.length; i++) {
+      if (i > 0) h += '<span class="arrow">→</span>';
+      h += '<span class="px' + (i < upTo ? '' : ' hidden') + '">' + fmt(PRICES[i]) + '</span>';
+    }
+    document.getElementById("prices").innerHTML = h;
+  }
+  function revealPrices(done){
+    if (!FIRST) { showPrices(PRICES.length); done(); return; }   // second screen: show all at once
+    let k = 1; showPrices(k);
+    const iv = setInterval(() => { k++; showPrices(k); if (k >= PRICES.length) { clearInterval(iv); done(); } }, REVEAL);
+  }
+</script>
