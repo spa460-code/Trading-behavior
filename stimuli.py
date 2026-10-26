@@ -1,45 +1,28 @@
 """
-Stimulus set: 3 matched head-to-head pairs + 3 fillers — UPWARD, tight steps.
-
-All sequences RISE with identical steps within pair. Crossing stock lands
-exactly on the round number at T2; twin never touches a salient round.
-
-Pair 1: crossing HIGHER-priced (twin just below)
-Pair 2: crossing HIGHER-priced (twin just below)
-Pair 3: crossing LOWER-priced  (twin just above)
-
-Filler pair_ids are 7-9 so existing Qualtrics fields (fill_p7-9) apply.
+TB51 stimulus set (Saeed's revision, Oct 26): 12 single-stock price sequences.
+2 (round vs non-round) x 2 (down vs up), 3 trials per cell.
+end_dist = size of the last step (middle -> last) in %, 1 / 3 / 7, same in every cell.
 """
 
-PAIRS = [
-    {   "pair_id": 1, "round_number": 10.00, "decimals": 2,
-        "crossing":    [9.99, 10.00, 10.01],
-        "noncrossing": [9.97, 9.98, 9.99],
-    },
-    {   "pair_id": 2, "round_number": 150, "decimals": 0,
-        "crossing":    [149, 150, 151],
-        "noncrossing": [147, 148, 149],
-    },
-    {   "pair_id": 3, "round_number": 500, "decimals": 0,
-        "crossing":    [499, 500, 501],
-        "noncrossing": [501, 502, 503],
-    },
-
-    # ---- FILLER pairs: both non-round, rising, attention check only -------
-    {   "pair_id": 7, "round_number": None, "decimals": 0,
-        "crossing":    [134, 136, 138],
-        "noncrossing": [262, 264, 266], "filler": True,
-    },
-    {   "pair_id": 8, "round_number": None, "decimals": 0,
-        "crossing":    [43, 44, 46],
-        "noncrossing": [326, 327, 329], "filler": True,
-    },
-    {   "pair_id": 9, "round_number": None, "decimals": 0,
-        "crossing":    [71, 73, 74],
-        "noncrossing": [182, 184, 186], "filler": True,
-    },
+TRIALS = [
+    # ---- Round, down ----
+    {"trial_id": 1,  "cond": "round",    "direction": "down", "level": 10,  "end_dist": 1, "decimals": 2, "prices": [10.40, 10.00, 9.90]},
+    {"trial_id": 2,  "cond": "round",    "direction": "down", "level": 100, "end_dist": 3, "decimals": 0, "prices": [103, 100, 97]},
+    {"trial_id": 3,  "cond": "round",    "direction": "down", "level": 50,  "end_dist": 7, "decimals": 2, "prices": [51.00, 50.00, 46.00]},
+    # ---- Round, up ----
+    {"trial_id": 4,  "cond": "round",    "direction": "up",   "level": 20,  "end_dist": 7, "decimals": 2, "prices": [19.40, 20.00, 21.40]},
+    {"trial_id": 5,  "cond": "round",    "direction": "up",   "level": 5,   "end_dist": 3, "decimals": 2, "prices": [4.85, 5.00, 5.15]},
+    {"trial_id": 6,  "cond": "round",    "direction": "up",   "level": 200, "end_dist": 1, "decimals": 0, "prices": [199, 200, 202]},
+    # ---- Non-round, down ----
+    {"trial_id": 7,  "cond": "nonround", "direction": "down", "level": 10,  "end_dist": 1, "decimals": 2, "prices": [9.62, 9.32, 9.22]},
+    {"trial_id": 8,  "cond": "nonround", "direction": "down", "level": 100, "end_dist": 3, "decimals": 0, "prices": [97, 94, 91]},
+    {"trial_id": 9,  "cond": "nonround", "direction": "down", "level": 50,  "end_dist": 7, "decimals": 2, "prices": [47.10, 45.90, 42.50]},
+    # ---- Non-round, up ----
+    {"trial_id": 10, "cond": "nonround", "direction": "up",   "level": 20,  "end_dist": 7, "decimals": 2, "prices": [17.70, 18.20, 19.47]},
+    {"trial_id": 11, "cond": "nonround", "direction": "up",   "level": 5,   "end_dist": 3, "decimals": 2, "prices": [5.27, 5.44, 5.60]},
+    {"trial_id": 12, "cond": "nonround", "direction": "up",   "level": 200, "end_dist": 1, "decimals": 0, "prices": [206, 207, 209]},
 ]
 
-TOKENS_PER_TRIAL = 10
-MOMENTUM_MIN = 1
-MOMENTUM_MAX = 7
+SHARES_OWNED = 100
+STRENGTH_MIN, STRENGTH_MAX = 1, 7
+BELIEF_MIN, BELIEF_MAX = 1, 7
