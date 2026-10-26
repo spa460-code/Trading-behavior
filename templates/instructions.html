@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Market Simulator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">MARKET&nbsp;SIM</div>
+    <h1>Your portfolio</h1>
+    <p>Imagine you are an investor and you own shares in <strong>{{ n_trials }} different stocks</strong>.</p>
+    <p>For each stock you will see its <strong>last three prices</strong>.
+       Based only on that price movement, decide whether to <strong>sell some of your shares</strong>
+       or <strong>buy more shares</strong>.</p>
+    <p class="muted">There are no right or wrong answers. Go with your own judgment, one stock at a time.</p>
+    <a class="btn" href="{{ url_for('trial', n=0) }}">Start →</a>
+  </div>
+</body>
+</html>
